@@ -4,6 +4,9 @@ import datetime
 from datetime import datetime, timedelta
 from urllib import parse, request
 import re
+from discord.utils import get
+from discord import FFmpegPCMAudio
+from youtube_dl import YoutubeDL
 
 message_last_seen = datetime.now()
 message_last_seen2 = datetime.now()
@@ -34,11 +37,11 @@ async def ping(ctx):
                                                      "/841995594775658496/page_pro.png")
     await ctx.channel.send(embed=emBed)
 
+
 @client.command()
 async def user(ctx):
     emBed = discord.Embed(title="Shocko Beta Bot", description="", color=0xd4a935)
     emBed.add_field(name="Hello!!!", value=str(ctx.author.name) + ". How are you ?", inline=False)
-    emBed.set_thumbnail(url='https://cdn.discordapp.com/attachments/841626021375246344/841995594775658496/page_pro.png')
     emBed.set_footer(text=f"{client.user}", icon_url="https://cdn.discordapp.com/attachments/841626021375246344"
                                                      "/841995594775658496/page_pro.png")
     await ctx.channel.send(embed=emBed)
@@ -56,13 +59,14 @@ async def page(ctx):
 
 @client.command()
 async def test(ctx, *, par):
-    emBed = discord.Embed(title="Shocko Beta Bot", description="", color=0xd4a935)
-    emBed.add_field(name="Facebook Page", value="https://www.facebook.com/Shockocoa/", inline=False)
-    emBed.set_thumbnail(url='https://cdn.discordapp.com/attachments/841626021375246344/841995594775658496/page_pro.png')
-    emBed.set_footer(text=f"{client.user}", icon_url="https://cdn.discordapp.com/attachments/841626021375246344"
-                                                     "/841995594775658496/page_pro.png")
-    await ctx.channel.send(embed=emBed)
-    await ctx.channel.send("You typed {0}".format(par))
+    # emBed = discord.Embed(title="Shocko Beta Bot", description="", color=0xd4a935)
+    # emBed.add_field(name="", value="https://www.facebook.com/Shockocoa/", inline=False)
+    # emBed.set_thumbnail(url='https://cdn.discordapp.com/attachments/841626021375246344/841995594775658496/page_pro.png')
+    # emBed.set_footer(text=f"{client.user}", icon_url="https://cdn.discordapp.com/attachments/841626021375246344"
+    #                                                  "/841995594775658496/page_pro.png")
+    # await ctx.channel.send(embed=emBed)
+    await ctx.channel.send("You typed '{0}".format(par) + "'.")
+
 
 @client.event
 async def on_ready():
@@ -95,6 +99,7 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+# still disable
 @client.command()
 async def youtube(ctx, *, search):
     query_string = parse.urlencode({'search_query': search})
@@ -102,6 +107,35 @@ async def youtube(ctx, *, search):
     # print(html_content.read().decode())
     search_results = re.findall('href=\"\\/watch\\?v=(.{11})', html_content.read().decode())
     print(search_results)
-    # I will put just the first result, you can loop the response to show more results
     await ctx.send('https://www.youtube.com/watch?v=' + search_results[0])
+
+
+# still disable
+@client.command()
+async def play(ctx, url):
+    channel = ctx.author.voice.channel
+    voice_client = get(client.voice_clients, guild=ctx.guild)
+
+    if voice_client is None:
+        ctx.channel.send("Joined")
+        await channel.connect()
+        voice_client = get(client.voice_clients, guild=ctx.guild)
+
+    YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+    FFMPEG_OPTIONS = {"before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", "options": "-vn"}
+
+    if not voice_client.is_playing():
+        with YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url, download=False)
+        URL = info["formats"][0]["url"]
+        voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+        voice_client.is_playing()
+    else:
+        await ctx.channel.send("Already playing song")
+        return
+
+
+@client.command()
+async def leave(ctx):
+    await ctx.voice_client.disconnect()
 
