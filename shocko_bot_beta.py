@@ -1,10 +1,3 @@
-# client
-# hMB-6OhrS0-UqRfQX1lA5RGCMoUGzt6t
-# token
-# ODQxNjI0MjY3MzgwNzUyNDU0.YJpdrQ.b4vpbDvaZbxjVt_f94rzD9ViXMo
-# permission int
-# 256064
-
 import discord
 from discord.ext import commands
 import datetime
@@ -112,5 +105,3 @@ async def youtube(ctx, *, search):
     # I will put just the first result, you can loop the response to show more results
     await ctx.send('https://www.youtube.com/watch?v=' + search_results[0])
 
-
-client.run('ODQxNjI0MjY3MzgwNzUyNDU0.YJpdrQ.b4vpbDvaZbxjVt_f94rzD9ViXMo')
